@@ -7,9 +7,6 @@ param imageName string
 @description('Subnet resource ID where Image Builder will run.')
 param subnetId string
 
-@description('Shared Image Gallery resource ID.')
-param galleryId string
-
 @description('Name of Gallery.')
 param galleryName string
 
