@@ -20,6 +20,11 @@ This solution provisions the following Azure resources:
 
 ---
 
+## Manually via CLI or Azure portal provision the following;
+- Resources group to contain all resources
+- Service Principle creation to give Github access/log in to Azure resource container
+- Log in azure portal copy IP of AD DS after deployment and update the Vnet DNS
+
 ## ⚙️ GitHub Actions Workflow: `deploy-avd.yml`
 
 ### 🔁 Trigger
@@ -33,9 +38,9 @@ This solution provisions the following Azure resources:
 | Step | Description |
 |------|-------------|
 | ✅ Checkout Code | Gets Bicep files from the repository |
-| 🔐 Azure Login | Authenticates via Azure OIDC |
+| 🔐 Azure Login | Authenticates via Service Principle |
 | 🌐 Deploy AD DS & VNet | Deploys network and AD Domain Services |
-| 🧠 Parse & Update DNS | Extracts DC IPs and updates VNet DNS servers |
+| 🧠 Update DNS | Manually Extracts DC IPs and updates VNet DNS servers In Azure Portal |
 | 👤 Deploy Identity + RBAC | Creates user-assigned identity with roles |
 | 🖼️ Deploy Image Builder | Deploys image template (for session hosts) |
 | 🧩 Deploy Host Pool | Creates AVD host pool and gets registration token |
@@ -53,7 +58,6 @@ This solution provisions the following Azure resources:
 │   └── deploy-avd.yml         # GitHub Actions workflow
 ├── bicep/
 │   ├── aad-ds.bicep           # AD DS and VNet
-│   ├── update-vnet.bicep      # DNS update
 │   ├── id-rbac.bicep          # Managed identity + RBAC
 │   ├── image-temp.bicep       # Azure Image Builder template
 │   ├── hostpool.bicep         # Host Pool + registration
@@ -66,7 +70,7 @@ This solution provisions the following Azure resources:
 
 ## 🔑 Required GitHub Secrets
 --Secret Name	Description
-- AZURE_CLIENT_ID	Azure app client ID (OIDC)
+- AZURE_CREDENTIALS	AZURE CREDENTIALS as a json format
 - AZURE_TENANT_ID	Azure tenant ID
 - AZURE_SUBSCRIPTION_ID	Azure subscription ID
 - VM_ADMIN_USERNAME	Username for AVD VMs
