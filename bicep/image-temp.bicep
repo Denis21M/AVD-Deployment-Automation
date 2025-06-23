@@ -41,6 +41,7 @@ resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-07-01
     distribute: [
       {
         type: 'SharedImage'
+        runOutputName: 'myRunOutput'
         galleryImageId: galleryImageId
         replicationRegions: [
           location
