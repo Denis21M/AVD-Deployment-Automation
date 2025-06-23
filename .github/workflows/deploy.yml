@@ -21,6 +21,11 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Upgrade Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          az version
+
       - name: Deploy Managed Identity + RBAC
         run: |
           az deployment group create \
@@ -32,7 +37,7 @@ jobs:
                         sharedImageName='myImageDef' \
                         subnetId='/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.Network/virtualNetworks/avd-vnet/subnets/avd-subnet' \
             --debug
-            
+
       - name: Deploy Azure Image Builder Template
         run: |
           az deployment group create \
