@@ -31,7 +31,7 @@ This solution provisions the following Azure resources:
 - Runs automatically on every push to the `main` branch.
 
 ### 🔐 Authentication
-- Uses [OIDC (OpenID Connect)](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux) to log in to Azure securely without secrets.
+- Uses [Service Principle](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux) to log in to Azure securely without secrets.
 
 ### 🧱 Pipeline Flow
 
