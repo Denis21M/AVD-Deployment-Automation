@@ -1,0 +1,121 @@
+name: Deploy AVD Environment
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-avd:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login using Service Principal
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+
+      - name: Deploy VNet + AD DS
+        id: deploy_ad_ds
+        run: |
+          az deployment group create \
+            --resource-group avd-rg \
+            --template-file ./bicep/aad-ds.bicep \
+            --parameters vnetName="avd-vnet" \
+                         subnetName="ad-ds-subnet" \
+                         domainName="corp.local" \
+                         location="eastus" \
+            --query "properties.outputs.domainServiceIpAddresses.value" -o json > ad_ds_ips.json
+
+      - name: Parse AD DS IPs
+        id: parse_ips
+        run: |
+          ips=$(cat ad_ds_ips.json | jq -c '.')
+          echo "::set-output name=ad_ds_ips::$ips"
+
+      - name: Update VNet DNS Servers
+        run: |
+          az deployment group create \
+            --resource-group avd-rg \
+            --template-file ./bicep/update-vnet.bicep \
+            --parameters vnetName="avd-vnet" \
+                         location="eastus" \
+                         dnsServers="${{ steps.parse_ips.outputs.ad_ds_ips }}"
+
+      - name: Deploy Managed Identity + RBAC
+        run: |
+          az deployment group create \
+            --resource-group avd-rg \
+            --template-file ./bicep/id-rbac.bicep \
+            --parameters location="eastus"
+
+      - name: Deploy Azure Image Builder Template
+        run: |
+          az deployment group create \
+            --resource-group avd-rg \
+            --template-file ./bicep/image-temp.bicep \
+            --parameters location="eastus"
+
+      - name: Deploy Host Pool and Get Registration Token
+        run: |
+          expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ")
+
+          hostPoolDeploy=$(az deployment group create \
+            --resource-group avd-rg \
+            --template-file ./bicep/hostpool.bicep \
+            --parameters hostPoolName="avd-hostpool" \
+                         location="eastus" \
+                         resourceGroupName="avd-rg" \
+                         expirationTime="$expirationTime" \
+            --query properties.outputs \
+            --output json)
+
+          registrationToken=$(echo $hostPoolDeploy | jq -r '.registrationToken.value')
+          hostPoolId=$(echo $hostPoolDeploy | jq -r '.hostPoolId.value')
+
+          echo "Host Pool Registration Token: $registrationToken"
+          echo "Host Pool Resource ID: $hostPoolId"
+
+          echo "registrationToken=$registrationToken" >> $GITHUB_ENV
+          echo "hostPoolId=$hostPoolId" >> $GITHUB_ENV
+
+      - name: Deploy Application Group
+        run: |
+          az deployment group create \
+            --resource-group avd-rg \
+            --template-file ./bicep/applicationgroup.bicep \
+            --parameters hostPoolName="avd-hostpool" \
+                         location="eastus"
+
+      - name: Deploy AVD Workspace
+        run: |
+          az deployment group create \
+            --resource-group avd-rg \
+            --template-file ./bicep/workspace.bicep \
+            --parameters location="eastus"
+
+      - name: Deploy Session Hosts
+        run: |
+          az deployment group create \
+            --resource-group avd-rg \
+            --template-file ./bicep/sessionhosts.bicep \
+            --parameters sessionHostNamePrefix="session-host" \
+                         location="eastus" \
+                         imageId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.Compute/galleries/avdGallery/images/Win10multi" \
+                         subnetId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.Network/virtualNetworks/avd-vnet/subnets/ad-ds-subnet" \
+                         adminUsername="${{ secrets.VM_ADMIN_USERNAME }}" \
+                         adminPassword="${{ secrets.VM_ADMIN_PASSWORD }}" \
+                         domainToJoin="corp.local" \
+                         domainJoinUsername="${{ secrets.DOMAIN_JOIN_USERNAME }}" \
+                         domainJoinPassword="${{ secrets.DOMAIN_JOIN_PASSWORD }}" \
+                         identityId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/avd-image-identity" \
+                         registrationToken="${{ env.registrationToken }}" \
+                         hostPoolId="${{ env.hostPoolId }}" \
+                         sessionHostCount=1

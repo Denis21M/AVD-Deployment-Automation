@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "imageName": {
+      "value": "Win10multi"
+    },
+    "imageGalleryName": {
+      "value": "avdGallery"
+    },
+    "identityName": {
+      "value": "avd-image-identity"
+    },
+    "subnetId": {
+      "value": "/subscriptions/e11ce71f-13b7-48e1-ba95-98732a4b1028/resourceGroups/avd-rg/providers/Microsoft.Network/virtualNetworks/avd-vnet/subnets/avd-subnet"
+    },
+    "domainName": {
+      "value": "corp.local"
+    },
+    "domainJoinUsername": {
+      "value": "corp\\joinuser"
+    },
+    "domainJoinPassword": {
+      "value": "YOUR_DOMAIN_JOIN_PASSWORD_HERE"
+    },
+    "adminUsername": {
+      "value": "avdadmin"
+    },
+    "adminPassword": {
+      "value": "YOUR_VM_ADMIN_PASSWORD_HERE"
+    },
+    "vmName": {
+      "value": "session-host"
+    },
+    "hostPoolName": {
+      "value": "avd-hostpool"
+    },
+    "appGroupName": {
+      "value": "avd-appgroup"
+    },
+    "workspaceName": {
+      "value": "avd-workspace"
+    }
+  }
+}
