@@ -10,7 +10,7 @@ param subnetName string = 'ad-ds-subnet'
 @description('Domain name for Azure AD DS')
 param domainName string = 'corp.local'
 
-// 1. Create VNet with subnet and empty DNS servers
+// 1. Create VNet with subnet and empty DNS servers (will update DNS later)
 resource vnet 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   name: vnetName
   location: location
@@ -21,7 +21,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-04-01' = {
       ]
     }
     dhcpOptions: {
-      dnsServers: []
+      dnsServers: [] // Initially empty; will update after AD DS IPs available
     }
     subnets: [
       {
@@ -58,4 +58,7 @@ resource domainServices 'Microsoft.AAD/domainServices@2021-05-01' = {
       additionalRecipients: []
     }
   }
+  dependsOn: [
+    vnet
+  ]
 }
