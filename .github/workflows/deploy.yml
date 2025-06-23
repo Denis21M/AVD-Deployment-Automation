@@ -21,18 +21,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-
-      - name: Deploy VNet + AD DS
-        id: deploy_ad_ds
-        run: |
-          az deployment group create \
-            --resource-group avd-rg \
-            --template-file ./bicep/aad-ds.bicep \
-            --parameters vnetName="avd-vnet" \
-                         subnetName="ad-ds-subnet" \
-                         domainName="corp.local" \
-                         location="eastus" \
-
       - name: Deploy Managed Identity + RBAC
         run: |
           az deployment group create \

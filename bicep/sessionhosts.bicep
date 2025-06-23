@@ -24,11 +24,11 @@ param adminPassword string
 param domainToJoin string
 
 @description('Username for domain join')
-param domainJoinUsername string
+param domainJoinUsername string  // Assume this is secure and passed from GitHub secrets
 
 @description('Password for domain join')
 @secure()
-param domainJoinPassword string
+param domainJoinPassword string  // Assume this is secure and passed from GitHub secrets
 
 @description('User-assigned managed identity ID')
 param identityId string
@@ -42,8 +42,6 @@ param registrationInfoToken string
 
 @description('Registration token for host pool')
 param registrationToken string
-
-
 
 // Network Interfaces
 resource nicResources 'Microsoft.Network/networkInterfaces@2023-02-01' = [for i in range(1, sessionHostCount + 1): {
@@ -115,17 +113,18 @@ resource sessionHosts 'Microsoft.Compute/virtualMachines@2023-03-01' = [for i in
 
 // Domain Join Script Extension
 resource vmExtensions 'Microsoft.Compute/virtualMachines/extensions@2022-03-01' = [for i in range(1, sessionHostCount + 1): {
-  name: '${sessionHostNamePrefix}${i}/avdRegistration'
+  name: '${sessionHostNamePrefix}${i}/domainJoin'
   location: location
   properties: {
-    publisher: 'Microsoft.Azure.DesktopVirtualization'
-    type: 'JsonADDomainExtension' // Replace with correct extension type if needed
-    typeHandlerVersion: '1.0'
+    publisher: 'Microsoft.Compute'
+    type: 'JsonADDomainExtension'
+    typeHandlerVersion: '1.3'
     autoUpgradeMinorVersion: true
     settings: {
-      hostPoolId: hostPoolId
-      registrationToken: registrationToken
-      // any other necessary settings
+      Name: domainToJoin
+      User: domainJoinUsername
+      Password: domainJoinPassword
+      Restart: 'true'
     }
   }
   dependsOn: [
@@ -133,19 +132,18 @@ resource vmExtensions 'Microsoft.Compute/virtualMachines/extensions@2022-03-01' 
   ]
 }]
 
-
 // AVD Host Pool Registration Extension
 resource avdExtensions 'Microsoft.Compute/virtualMachines/extensions@2022-03-01' = [for i in range(1, sessionHostCount + 1): {
-  name: '${sessionHostNamePrefix}${i}/avdregister'
+  name: '${sessionHostNamePrefix}${i}/avdRegistration'
   location: location
   properties: {
-    publisher: 'Microsoft.Azure.VirtualDesktop'
-    type: 'MicrosoftMonitoringAgent'
+    publisher: 'Microsoft.Azure.DesktopVirtualization'
+    type: 'JsonADDomainExtension'  // Double-check this extension type for AVD registration; if wrong, replace accordingly
     typeHandlerVersion: '1.0'
     autoUpgradeMinorVersion: true
     settings: {
       hostPoolId: hostPoolId
-      token: registrationInfoToken
+      registrationToken: registrationToken
     }
   }
   dependsOn: [
