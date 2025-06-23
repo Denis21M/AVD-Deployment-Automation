@@ -27,24 +27,26 @@ resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-07-01
       version: 'latest'
     }
     customize: [
-  {
-    type: 'PowerShell'
-    name: 'InstallChrome'
-    scriptUri: 'https://raw.githubusercontent.com/Azure/azvmimagebuilder/main/quickquickstarts/scripts/inst_chrome.ps1'
-  }
-  {
-    type: 'PowerShell'
-    name: 'Install7Zip'
-    scriptUri: 'https://raw.githubusercontent.com/Azure/azvmimagebuilder/main/quickquickstarts/scripts/inst_7zip.ps1'
-  }
-]
-    distribute: {
-      type: 'SharedImage'
-      galleryImageId: galleryImageId
-      replicationRegions: [
-        location
-      ]
-    }
+      {
+        type: 'PowerShell'
+        name: 'InstallChrome'
+        scriptUri: 'https://raw.githubusercontent.com/Azure/azvmimagebuilder/main/quickquickstarts/scripts/inst_chrome.ps1'
+      }
+      {
+        type: 'PowerShell'
+        name: 'Install7Zip'
+        scriptUri: 'https://raw.githubusercontent.com/Azure/azvmimagebuilder/main/quickquickstarts/scripts/inst_7zip.ps1'
+      }
+    ]
+    distribute: [
+      {
+        type: 'SharedImage'
+        galleryImageId: galleryImageId
+        replicationRegions: [
+          location
+        ]
+      }
+    ]
     vmProfile: {
       osDiskSizeGB: 127
       vnetConfig: {
