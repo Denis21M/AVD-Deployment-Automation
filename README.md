@@ -23,7 +23,11 @@ This solution provisions the following Azure resources:
 ## Manually via CLI or Azure portal provision the following;
 - Resources group to contain all resources
 - Service Principle creation to give Github access/log in to Azure resource container
+- Create SIG (Share image gallery)
+- Create Share Image Name
+- Deploy AD DS, NSG (open necessary ports) & VNet+Subnet
 - Log in azure portal copy IP of AD DS after deployment and update the Vnet DNS
+
 
 ## ⚙️ GitHub Actions Workflow: `deploy-avd.yml`
 
@@ -39,8 +43,6 @@ This solution provisions the following Azure resources:
 |------|-------------|
 | ✅ Checkout Code | Gets Bicep files from the repository |
 | 🔐 Azure Login | Authenticates via Service Principle |
-| 🌐 Deploy AD DS & VNet | Deploys network and AD Domain Services |
-| 🧠 Update DNS | Manually Extracts DC IPs and updates VNet DNS servers In Azure Portal |
 | 👤 Deploy Identity + RBAC | Creates user-assigned identity with roles |
 | 🖼️ Deploy Image Builder | Deploys image template (for session hosts) |
 | 🧩 Deploy Host Pool | Creates AVD host pool and gets registration token |
@@ -57,7 +59,6 @@ This solution provisions the following Azure resources:
 ├── .github/workflows/
 │   └── deploy-avd.yml         # GitHub Actions workflow
 ├── bicep/
-│   ├── aad-ds.bicep           # AD DS and VNet
 │   ├── id-rbac.bicep          # Managed identity + RBAC
 │   ├── image-temp.bicep       # Azure Image Builder template
 │   ├── hostpool.bicep         # Host Pool + registration
