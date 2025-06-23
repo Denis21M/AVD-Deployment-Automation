@@ -32,22 +32,6 @@ jobs:
                          subnetName="ad-ds-subnet" \
                          domainName="corp.local" \
                          location="eastus" \
-            --query "properties.outputs.domainServiceIpAddresses.value" -o json > ad_ds_ips.json
-
-      - name: Parse AD DS IPs
-        id: parse_ips
-        run: |
-          ips=$(cat ad_ds_ips.json | jq -c '.')
-          echo "::set-output name=ad_ds_ips::$ips"
-
-      - name: Update VNet DNS Servers
-        run: |
-          az deployment group create \
-            --resource-group avd-rg \
-            --template-file ./bicep/update-vnet.bicep \
-            --parameters vnetName="avd-vnet" \
-                         location="eastus" \
-                         dnsServers="${{ steps.parse_ips.outputs.ad_ds_ips }}"
 
       - name: Deploy Managed Identity + RBAC
         run: |
