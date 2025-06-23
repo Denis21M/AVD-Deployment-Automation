@@ -38,7 +38,7 @@ resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-07-01
     scriptUri: 'https://raw.githubusercontent.com/Azure/azvmimagebuilder/main/quickquickstarts/scripts/inst_7zip.ps1'
   }
 ]
-    destination: {
+    distribute: {
       type: 'SharedImage'
       galleryImageId: galleryImageId
       replicationRegions: [
