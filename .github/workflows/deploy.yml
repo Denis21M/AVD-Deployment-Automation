@@ -31,7 +31,6 @@ jobs:
                         galleryName='myGallery' \
                         sharedImageName='myImageDef' \
                         subnetId='/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.Network/virtualNetworks/avd-vnet/subnets/avd-subnet' \
-                        galleryId='/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.Compute/galleries/myGallery'
 
       - name: Deploy Azure Image Builder Template
         run: |
