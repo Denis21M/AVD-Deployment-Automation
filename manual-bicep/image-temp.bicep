@@ -22,7 +22,7 @@ resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-07-01
     source: {
       type: 'PlatformImage'
       publisher: 'MicrosoftWindowsDesktop'
-      offer: 'office-365'
+      offer: 'Windows-10'
       sku: 'win10-22h2-avd'
       version: 'latest'
     }

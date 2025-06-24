@@ -20,13 +20,15 @@ This solution provisions the following Azure resources:
 
 ---
 
-## Manually via CLI or Azure portal provision the following;
+## Manually via CLI using bash/powershell or Azure portal provision the following;
 - Resources group to contain all resources
 - Service Principle creation to give Github access/log in to Azure resource container
 - Create SIG (Share image gallery)
 - Create Share Image Name
-- Deploy AD DS, NSG (open necessary ports) & VNet+Subnet
+- Deploy AD DS, NSG (open necessary ports) & VNet+Subnet, file path = manual-bicep/aad-ds.bicep
 - Log in azure portal copy IP of AD DS after deployment and update the Vnet DNS
+- Deploy Identity + RBAC, Creates user-assigned identity with roles, file path = manual-bicep/id-rbac.bicep
+- Deploy Image Builder, Deploys image template and build the image (for session hosts), file path = manual-bicep/image-temp.bicep
 
 
 ## ⚙️ GitHub Actions Workflow: `deploy-avd.yml`
@@ -43,8 +45,6 @@ This solution provisions the following Azure resources:
 |------|-------------|
 | ✅ Checkout Code | Gets Bicep files from the repository |
 | 🔐 Azure Login | Authenticates via Service Principle |
-| 👤 Deploy Identity + RBAC | Creates user-assigned identity with roles |
-| 🖼️ Deploy Image Builder | Deploys image template (for session hosts) |
 | 🧩 Deploy Host Pool | Creates AVD host pool and gets registration token |
 | 🧠 Deploy App Group | Creates desktop application group |
 | 🖥️ Deploy Workspace | Links app group to an AVD workspace |
@@ -59,8 +59,6 @@ This solution provisions the following Azure resources:
 ├── .github/workflows/
 │   └── deploy-avd.yml         # GitHub Actions workflow
 ├── bicep/
-│   ├── id-rbac.bicep          # Managed identity + RBAC
-│   ├── image-temp.bicep       # Azure Image Builder template
 │   ├── hostpool.bicep         # Host Pool + registration
 │   ├── sessionhosts.bicep     # VM session hosts
 │   ├── applicationgroup.bicep # Desktop Application Group
