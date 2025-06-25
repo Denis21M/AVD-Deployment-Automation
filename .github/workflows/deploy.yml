@@ -1,7 +1,7 @@
-#name: Deploy AVD Environment
+name: Deploy AVD Environment
 
 on:
-  push:
+  #push:
     branches: [ main ]
 
 jobs:
@@ -43,9 +43,11 @@ jobs:
           registrationToken=$(echo $hostPoolDeploy | jq -r '.registrationToken.value')
           hostPoolId=$(echo $hostPoolDeploy | jq -r '.hostPoolId.value')
 
-          echo "Host Pool Registration Token: $registrationToken"
-          echo "Host Pool Resource ID: $hostPoolId"
+          # Mask values to prevent exposure in logs
+          echo "::add-mask::$registrationToken"
+          echo "::add-mask::$hostPoolId"
 
+          # Save securely to GitHub Actions environment
           echo "registrationToken=$registrationToken" >> $GITHUB_ENV
           echo "hostPoolId=$hostPoolId" >> $GITHUB_ENV
 
@@ -64,21 +66,21 @@ jobs:
             --template-file ./bicep/workspace.bicep \
             --parameters location="eastus"
 
-      - name: Deploy Session Hosts
+      - name: Deploy Session Hosts from custom image
         run: |
           az deployment group create \
             --resource-group avd-rg \
             --template-file ./bicep/sessionhosts.bicep \
             --parameters sessionHostNamePrefix="session-host" \
                          location="eastus" \
-                         imageId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.Compute/galleries/avdGallery/images/Win10multi" \
-                         subnetId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.Network/virtualNetworks/avd-vnet/subnets/ad-ds-subnet" \
+                         imageId="${{ secrets.IMAGE_ID }}" \
+                         subnetId="${{ secrets.SUBNET_ID }}" \
                          adminUsername="${{ secrets.VM_ADMIN_USERNAME }}" \
                          adminPassword="${{ secrets.VM_ADMIN_PASSWORD }}" \
                          domainToJoin="corp.local" \
                          domainJoinUsername="${{ secrets.DOMAIN_JOIN_USERNAME }}" \
                          domainJoinPassword="${{ secrets.DOMAIN_JOIN_PASSWORD }}" \
-                         identityId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/avd-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/avd-image-identity" \
+                         identityId="${{ secrets.IDENTITY_ID }}" \
                          registrationToken="${{ env.registrationToken }}" \
                          hostPoolId="${{ env.hostPoolId }}" \
                          sessionHostCount=1

@@ -9,7 +9,7 @@ This repository contains all infrastructure-as-code (IaC) and automation logic n
 This solution provisions the following Azure resources:
 
 - **Virtual Network (VNet)** and subnet
-- **Azure Active Directory Domain Services (AD DS)** domain (`corp.local`)
+- **Azure Active Directory Domain Services (AD DS)** domain (`xxx`)
 - **DNS Update** with Domain Controller IPs
 - **User-Assigned Managed Identity** with RBAC for Image Builder
 - **Azure Image Builder Template** (AVD image creation)
@@ -23,12 +23,13 @@ This solution provisions the following Azure resources:
 ## Manually via CLI using bash/powershell or Azure portal provision the following;
 - Resources group to contain all resources
 - Service Principle creation to give Github access/log in to Azure resource container
-- Create SIG (Share image gallery)
-- Create Share Image Name
+- Create SIG (Shared image gallery)
+- Create Shared Image Name
 - Deploy AD DS, NSG (open necessary ports) & VNet+Subnet, file path = manual-bicep/aad-ds.bicep
 - Log in azure portal copy IP of AD DS after deployment and update the Vnet DNS
+- Disable the PLS (privatelinkservice) of the subnet because it blocks the image builder
 - Deploy Identity + RBAC, Creates user-assigned identity with roles, file path = manual-bicep/id-rbac.bicep
-- Deploy Image Builder, Deploys image template and build the image (for session hosts), file path = manual-bicep/image-temp.bicep
+- Deploys image template file path = manual-bicep/image-temp.bicep and build image via cli or start build in azure portal (for sessions hosts)
 
 
 ## ⚙️ GitHub Actions Workflow: `deploy-avd.yml`

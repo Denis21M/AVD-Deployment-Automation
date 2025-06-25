@@ -4,38 +4,38 @@ param subscriptionId string = subscription().subscriptionId
 param resourceGroupName string = resourceGroup().name
 param galleryName string
 param sharedImageName string
-param subnetId string
-param identityId string
+param subnetId string // Full resource ID
+param identityId string // Full resource ID
+param vmSize string = 'Standard_D2s_v3' // Default to supported size
 
 var galleryImageId = '/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/galleries/${galleryName}/images/${sharedImageName}'
 
 resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-07-01' = {
   name: imageName
   location: location
+  tags: {
+    environment: 'dev'
+    project: 'avd-image-builder'
+  }
   identity: {
     type: 'UserAssigned'
-    userAssignedIdentities: {
+    userAssignedIdentities: any({
       '${identityId}': {}
-    }
+    })
   }
   properties: {
     source: {
       type: 'PlatformImage'
       publisher: 'MicrosoftWindowsDesktop'
-      offer: 'Windows-10'
-      sku: 'win10-22h2-avd'
+      offer: 'windows-11'
+      sku: 'win11-22h2-avd'
       version: 'latest'
     }
     customize: [
       {
         type: 'PowerShell'
-        name: 'InstallChrome'
-        scriptUri: 'https://raw.githubusercontent.com/Azure/azvmimagebuilder/main/quickquickstarts/scripts/inst_chrome.ps1'
-      }
-      {
-        type: 'PowerShell'
-        name: 'Install7Zip'
-        scriptUri: 'https://raw.githubusercontent.com/Azure/azvmimagebuilder/main/quickquickstarts/scripts/inst_7zip.ps1'
+        name: 'InstallChromeAndVSCode'
+        scriptUri: 'https://raw.githubusercontent.com/Denis21M/AVD-Deployment-Automation/refs/heads/main/app-scripts/install-apps.ps1'
       }
     ]
     distribute: [
@@ -50,6 +50,7 @@ resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-07-01
     ]
     vmProfile: {
       osDiskSizeGB: 127
+      vmSize: vmSize
       vnetConfig: {
         subnetId: subnetId
       }
