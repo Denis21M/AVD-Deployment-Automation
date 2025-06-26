@@ -77,10 +77,10 @@ jobs:
           expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiration Time is: $expirationTime"
 
-          az desktopvirtualization registration-info reset \
-            --host-pool-name $HOSTPOOL_NAME \
+          az desktopvirtualization hostpool update \
+            --name $HOSTPOOL_NAME \
             --resource-group $RESOURCE_GROUP \
-            --expiration-time "$expirationTime"
+            --set registrationInfo.expirationTime="$expirationTime"
 
           registrationToken=$(az desktopvirtualization hostpool show \
             --resource-group $RESOURCE_GROUP \
