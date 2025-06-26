@@ -57,7 +57,7 @@ jobs:
 
           registrationDeploy=$(az deployment group create --debug \
             --resource-group $RESOURCE_GROUP \
-            --template-file ./bicep/reginfo.bicep \
+            --template-file ./bicep/reginfor.bicep \
             --parameters hostPoolId="$hostPoolId" expirationTime="$expirationTime")
 
           echo "$registrationDeploy" > registration_deploy.json
