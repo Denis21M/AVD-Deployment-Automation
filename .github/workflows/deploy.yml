@@ -29,28 +29,42 @@ jobs:
             --name $HOSTPOOL_NAME \
             --yes || echo "Host pool not found, skipping deletion"
 
-      - name: Deploy Host Pool and Get Registration Token
+      - name: Deploy Host Pool
+        id: deploy_hostpool
         run: |
           expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiration Time is: $expirationTime"
 
-          az deployment group create --debug \
-            --resource-group avd-rg \
+          # Deploy hostpool only (without registration info)
+          hostPoolDeploy=$(az deployment group create --debug \
+            --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/hostpool.bicep \
-            --parameters hostPoolName=avd-hostpool \
-                        location=eastus \
-                        expirationTime="$expirationTime" \
-            --query properties.outputs \
-            --output json
+            --parameters hostPoolName=$HOSTPOOL_NAME \
+                         location=$LOCATION)
 
-          registrationToken=$(echo $hostPoolDeploy | jq -r '.registrationToken.value')
-          hostPoolId=$(echo $hostPoolDeploy | jq -r '.hostPoolId.value')
+          echo "$hostPoolDeploy" > hostpool_deploy.json
 
-          echo "::add-mask::$registrationToken"
-          echo "::add-mask::$hostPoolId"
-
-          echo "registrationToken=$registrationToken" >> $GITHUB_ENV
+          # Extract hostPoolId from deployment output or build it manually
+          hostPoolId=$(jq -r '.properties.outputs.hostPoolId.value' hostpool_deploy.json)
           echo "hostPoolId=$hostPoolId" >> $GITHUB_ENV
+          echo "::set-output name=hostPoolId::$hostPoolId"
+
+      - name: Deploy Registration Info (token) and get token
+        id: deploy_registration
+        run: |
+          expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
+          echo "Expiration Time is: $expirationTime"
+
+          registrationDeploy=$(az deployment group create --debug \
+            --resource-group $RESOURCE_GROUP \
+            --template-file ./bicep/reginfo.bicep \
+            --parameters hostPoolId="$hostPoolId" expirationTime="$expirationTime")
+
+          echo "$registrationDeploy" > registration_deploy.json
+
+          registrationToken=$(jq -r '.properties.outputs.registrationToken.value' registration_deploy.json)
+          echo "registrationToken=$registrationToken" >> $GITHUB_ENV
+          echo "::set-output name=registrationToken::$registrationToken"
 
       - name: Deploy Application Group
         run: |
@@ -64,17 +78,17 @@ jobs:
       - name: Deploy AVD Workspace
         run: |
           az deployment group create \
-            --resource-group avd-rg \
+            --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/workspace.bicep \
-            --parameters location="eastus"
+            --parameters location=$LOCATION
 
       - name: Deploy Session Hosts from custom image
         run: |
           az deployment group create \
-            --resource-group avd-rg \
+            --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/sessionhosts.bicep \
             --parameters sessionHostNamePrefix="session-host" \
-                         location="eastus" \
+                         location=$LOCATION \
                          imageId="${{ secrets.IMAGE_ID }}" \
                          subnetId="${{ secrets.SUBNET_ID }}" \
                          adminUsername="${{ secrets.VM_ADMIN_USERNAME }}" \

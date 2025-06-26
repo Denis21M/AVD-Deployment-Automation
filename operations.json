@@ -1,0 +1,57 @@
+[
+  {
+    "id": "/subscriptions/608aabdb-50b6-49ee-ad45-38880d12911c/resourceGroups/avd-rg/providers/Microsoft.Resources/deployments/hostpool/operations/AC2C532DE08DE9B4",
+    "operationId": "AC2C532DE08DE9B4",
+    "properties": {
+      "duration": "PT3.3643763S",
+      "provisioningOperation": "Create",
+      "provisioningState": "Failed",
+      "request": null,
+      "response": null,
+      "serviceRequestId": null,
+      "statusCode": "NotFound",
+      "statusMessage": {
+        "error": {
+          "additionalInfo": null,
+          "code": "BadRequest",
+          "details": null,
+          "message": "",
+          "target": null
+        },
+        "status": "Failed"
+      },
+      "targetResource": {
+        "id": "/subscriptions/608aabdb-50b6-49ee-ad45-38880d12911c/resourceGroups/avd-rg/providers/Microsoft.DesktopVirtualization/hostPools/avd-hostpool/registrationInfo/registrationInfo",
+        "resourceGroup": "avd-rg",
+        "resourceName": "avd-hostpool/registrationInfo",
+        "resourceType": "Microsoft.DesktopVirtualization/hostPools/registrationInfo"
+      },
+      "timestamp": "2025-06-26T12:30:33.112307+00:00",
+      "trackingId": "94cf3590-2530-4199-adbb-ba2273ce9f5d"
+    },
+    "resourceGroup": "avd-rg"
+  },
+  {
+    "id": "/subscriptions/608aabdb-50b6-49ee-ad45-38880d12911c/resourceGroups/avd-rg/providers/Microsoft.Resources/deployments/hostpool/operations/F0CC33B07E137C07",
+    "operationId": "F0CC33B07E137C07",
+    "properties": {
+      "duration": "PT2.442504S",
+      "provisioningOperation": "Create",
+      "provisioningState": "Succeeded",
+      "request": null,
+      "response": null,
+      "serviceRequestId": null,
+      "statusCode": "Created",
+      "statusMessage": null,
+      "targetResource": {
+        "id": "/subscriptions/608aabdb-50b6-49ee-ad45-38880d12911c/resourceGroups/avd-rg/providers/Microsoft.DesktopVirtualization/hostPools/avd-hostpool",
+        "resourceGroup": "avd-rg",
+        "resourceName": "avd-hostpool",
+        "resourceType": "Microsoft.DesktopVirtualization/hostPools"
+      },
+      "timestamp": "2025-06-26T12:30:33.112307+00:00",
+      "trackingId": "4d29bf71-ef18-424f-b3f2-c96be173c667"
+    },
+    "resourceGroup": "avd-rg"
+  }
+]
