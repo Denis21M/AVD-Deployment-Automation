@@ -105,3 +105,4 @@ jobs:
                          identityId="${{ secrets.IDENTITY_ID }}" \
                          registrationToken="${{ env.registrationToken }}" \
                          sessionHostCount=1
+            --debug
