@@ -67,27 +67,18 @@ jobs:
             --parameters location=$LOCATION \
                         appGroupResourceId=$appGroupResourceId \
                         workspaceName="avd-workspace"
-                        
-      - name: Reset existing Registration Info (if any)
-        run: |
-          echo "Resetting registration info for host pool (if exists)..."
-          az desktopvirtualization registration-info reset \
-            --resource-group $RESOURCE_GROUP \
-            --host-pool-name $HOSTPOOL_NAME || echo "Reset failed or nothing to reset."
 
-      - name: Generate and Retrieve Registration Token via CLI
-        id: get_registration_token
+      - name: Reset registration info and retrieve token
         run: |
-          expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
+          echo "Resetting registration info for host pool..."
+          expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiration Time is: $expirationTime"
 
-          # Create the registration info (token)
-          az desktopvirtualization registration-info create \
+          az desktopvirtualization hostpool update \
             --resource-group $RESOURCE_GROUP \
-            --host-pool-name $HOSTPOOL_NAME \
-            --expiration-time "$expirationTime"
+            --name $HOSTPOOL_NAME \
+            --set registrationInfo.expirationTime="$expirationTime"
 
-          # Retrieve the token
           registrationToken=$(az desktopvirtualization hostpool show \
             --resource-group $RESOURCE_GROUP \
             --name $HOSTPOOL_NAME \
@@ -96,7 +87,6 @@ jobs:
 
           echo "registrationToken=$registrationToken" >> $GITHUB_ENV
           echo "::set-output name=registrationToken::$registrationToken"
-
 
       - name: Deploy Session Hosts from custom image
         run: |
