@@ -35,32 +35,25 @@ jobs:
           expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiration Time is: $expirationTime"
 
-          # Deploy hostpool only (without registration info)
-          hostPoolDeploy=$(az deployment group create --debug \
+          hostPoolDeploy=$(az deployment group create \
             --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/hostpool.bicep \
             --parameters hostPoolName=$HOSTPOOL_NAME \
-                         location=$LOCATION)
+                         location=$LOCATION \
+            --output json)
 
           echo "$hostPoolDeploy" > hostpool_deploy.json
 
-          # Extract hostPoolId from deployment output or build it manually
           hostPoolId=$(jq -r '.properties.outputs.hostPoolId.value' hostpool_deploy.json)
           echo "hostPoolId=$hostPoolId" >> $GITHUB_ENV
           echo "::set-output name=hostPoolId::$hostPoolId"
-      
+
       - name: Delete existing Registration Info if exists
         run: |
-          registrationInfoExists=$(az resource show \
-            --resource-group $RESOURCE_GROUP \
-            --resource-type "Microsoft.DesktopVirtualization/hostPools/registrationInfo" \
-            --name "$HOSTPOOL_NAME/registrationInfo" \
-            --query "name" -o tsv || echo "")
-          
-          if [ -n "$registrationInfoExists" ]; then
+          regInfoId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DesktopVirtualization/hostPools/$HOSTPOOL_NAME/registrationInfo"
+          if az resource show --ids "$regInfoId" --query "name" -o tsv 2>/dev/null; then
             echo "Deleting existing registrationInfo..."
-            az resource delete \
-              --ids "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DesktopVirtualization/hostPools/$HOSTPOOL_NAME/registrationInfo"
+            az resource delete --ids "$regInfoId"
           else
             echo "No existing registrationInfo found."
           fi
@@ -71,10 +64,11 @@ jobs:
           expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiration Time is: $expirationTime"
 
-          registrationDeploy=$(az deployment group create --debug \
+          registrationDeploy=$(az deployment group create \
             --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/reginfor.bicep \
-            --parameters hostPoolId="$hostPoolId" expirationTime="$expirationTime")
+            --parameters hostPoolId="$hostPoolId" expirationTime="$expirationTime" \
+            --output json)
 
           echo "$registrationDeploy" > registration_deploy.json
 
