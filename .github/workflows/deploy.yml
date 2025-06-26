@@ -67,6 +67,10 @@ jobs:
             --parameters location=$LOCATION \
                         appGroupResourceId=$appGroupResourceId \
                         workspaceName="avd-workspace"
+      
+      - name: Ensure AVD Extension Installed
+        run: |
+          az extension add --name desktopvirtualization --yes || az extension update --name desktopvirtualization
 
       - name: Generate AVD Registration Token
         run: |
