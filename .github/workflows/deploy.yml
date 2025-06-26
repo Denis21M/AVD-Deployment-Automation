@@ -34,7 +34,7 @@ jobs:
           expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiration Time is: $expirationTime"
 
-          az deployment group create \
+          az deployment group create --debug \
             --resource-group avd-rg \
             --template-file ./bicep/hostpool.bicep \
             --parameters hostPoolName=avd-hostpool \

@@ -32,8 +32,8 @@ resource hostPool 'Microsoft.DesktopVirtualization/hostPools@2022-02-10-preview'
 
 // Registration Info (token) Resource — must be a child of hostPool
 resource registrationInfo 'Microsoft.DesktopVirtualization/hostPools/registrationInfo@2022-02-10-preview' = {
-  parent: hostPool
   name: 'registrationInfo'
+  parent: hostPool
   properties: {
     expirationTime: expirationTime
   }
