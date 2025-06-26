@@ -31,15 +31,14 @@ jobs:
 
       - name: Deploy Host Pool and Get Registration Token
         run: |
-          expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiration Time is: $expirationTime"
-
-          az deployment group create \
-            --resource-group $RESOURCE_GROUP \
+          az deployment group validate \
+            --resource-group avd-rg \
             --template-file ./bicep/hostpool.bicep \
-            --parameters hostPoolName=$HOSTPOOL_NAME \
-                        location=$LOCATION \
-                        expirationTime="$expirationTime"
+            --parameters hostPoolName=avd-hostpool \
+                        location=eastus \
+                        expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ")
+
             --query properties.outputs \
             --output json)
 
