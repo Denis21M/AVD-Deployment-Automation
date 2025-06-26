@@ -1,16 +1,17 @@
 name: Deploy AVD Environment
 
 on:
-  #push:
+  push:
     branches: [ main ]
 
 jobs:
   deploy-avd:
     runs-on: ubuntu-latest
-
-    permissions:
-      id-token: write
-      contents: read
+    env:
+      RESOURCE_GROUP: avd-rg
+      LOCATION: eastus
+      HOSTPOOL_NAME: avd-hostpool
+      APPGROUP_NAME: avd-appgroup
 
     steps:
       - name: Checkout Code
@@ -31,11 +32,11 @@ jobs:
           expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ")
 
           hostPoolDeploy=$(az deployment group create \
-            --resource-group avd-rg \
+            --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/hostpool.bicep \
-            --parameters hostPoolName="avd-hostpool" \
-                         location="eastus" \
-                         resourceGroupName="avd-rg" \
+            --parameters hostPoolName=$HOSTPOOL_NAME \
+                         location=$LOCATION \
+                         resourceGroupName=$RESOURCE_GROUP \
                          expirationTime="$expirationTime" \
             --query properties.outputs \
             --output json)
@@ -43,21 +44,20 @@ jobs:
           registrationToken=$(echo $hostPoolDeploy | jq -r '.registrationToken.value')
           hostPoolId=$(echo $hostPoolDeploy | jq -r '.hostPoolId.value')
 
-          # Mask values to prevent exposure in logs
           echo "::add-mask::$registrationToken"
           echo "::add-mask::$hostPoolId"
 
-          # Save securely to GitHub Actions environment
           echo "registrationToken=$registrationToken" >> $GITHUB_ENV
           echo "hostPoolId=$hostPoolId" >> $GITHUB_ENV
 
       - name: Deploy Application Group
         run: |
           az deployment group create \
-            --resource-group avd-rg \
+            --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/applicationgroup.bicep \
-            --parameters hostPoolName="avd-hostpool" \
-                         location="eastus"
+            --parameters appGroupName=$APPGROUP_NAME \
+                         location=$LOCATION \
+                         hostPoolResourceId=$hostPoolId
 
       - name: Deploy AVD Workspace
         run: |
@@ -77,7 +77,7 @@ jobs:
                          subnetId="${{ secrets.SUBNET_ID }}" \
                          adminUsername="${{ secrets.VM_ADMIN_USERNAME }}" \
                          adminPassword="${{ secrets.VM_ADMIN_PASSWORD }}" \
-                         domainToJoin="corp.local" \
+                         domainToJoin="chinazom.com" \
                          domainJoinUsername="${{ secrets.DOMAIN_JOIN_USERNAME }}" \
                          domainJoinPassword="${{ secrets.DOMAIN_JOIN_PASSWORD }}" \
                          identityId="${{ secrets.IDENTITY_ID }}" \

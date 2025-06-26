@@ -33,13 +33,6 @@ param domainJoinPassword string  // Assume this is secure and passed from GitHub
 @description('User-assigned managed identity ID')
 param identityId string
 
-@description('Host pool to register session hosts to')
-param hostPoolId string
-
-@description('Registration token used for session host registration')
-@secure()
-param registrationInfoToken string
-
 @description('Registration token for host pool')
 param registrationToken string
 
@@ -138,15 +131,16 @@ resource avdExtensions 'Microsoft.Compute/virtualMachines/extensions@2022-03-01'
   location: location
   properties: {
     publisher: 'Microsoft.Azure.DesktopVirtualization'
-    type: 'JsonADDomainExtension'  // Double-check this extension type for AVD registration; if wrong, replace accordingly
+    type: 'SessionHost'
     typeHandlerVersion: '1.0'
     autoUpgradeMinorVersion: true
     settings: {
-      hostPoolId: hostPoolId
-      registrationToken: registrationToken
+      joinType: 'Automatic'
+      registrationInfoToken: registrationToken
     }
   }
   dependsOn: [
     sessionHosts[i - 1]
   ]
 }]
+

@@ -2,10 +2,7 @@
 param hostPoolName string
 
 @description('Location of the host pool')
-param location string
-
-@description('Resource group name (used in token resource ID)')
-param resourceGroupName string
+param location string = resourceGroup().location
 
 @description('Host pool type')
 param hostPoolType string = 'Pooled'
@@ -26,6 +23,10 @@ resource hostPool 'Microsoft.DesktopVirtualization/hostPools@2022-02-10-preview'
     preferredAppGroupType: preferredAppGroupType
     loadBalancerType: 'DepthFirst'
     validationEnvironment: false
+  }
+  tags: {
+    environment: 'Production'
+    project: 'AVD'
   }
 }
 
