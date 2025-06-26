@@ -48,34 +48,6 @@ jobs:
           echo "hostPoolId=$hostPoolId" >> $GITHUB_ENV
           echo "::set-output name=hostPoolId::$hostPoolId"
 
-      - name: Delete existing Registration Info if exists
-        run: |
-          regInfoId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DesktopVirtualization/hostPools/$HOSTPOOL_NAME/registrationInfo"
-          if az resource show --ids "$regInfoId" --query "name" -o tsv 2>/dev/null; then
-            echo "Deleting existing registrationInfo..."
-            az resource delete --ids "$regInfoId"
-          else
-            echo "No existing registrationInfo found."
-          fi
-
-      - name: Deploy Registration Info (token) and get token
-        id: deploy_registration
-        run: |
-          expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
-          echo "Expiration Time is: $expirationTime"
-
-          registrationDeploy=$(az deployment group create \
-            --resource-group $RESOURCE_GROUP \
-            --template-file ./bicep/reginfor.bicep \
-            --parameters hostPoolId="$hostPoolId" expirationTime="$expirationTime" \
-            --output json)
-
-          echo "$registrationDeploy" > registration_deploy.json
-
-          registrationToken=$(jq -r '.properties.outputs.registrationToken.value' registration_deploy.json)
-          echo "registrationToken=$registrationToken" >> $GITHUB_ENV
-          echo "::set-output name=registrationToken::$registrationToken"
-
       - name: Deploy Application Group
         run: |
           az deployment group create \
@@ -91,6 +63,36 @@ jobs:
             --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/workspace.bicep \
             --parameters location=$LOCATION
+
+      - name: Reset existing Registration Info (if any)
+        run: |
+          echo "Resetting registration info for host pool (if exists)..."
+          az desktopvirtualization registration-info reset \
+            --resource-group $RESOURCE_GROUP \
+            --host-pool-name $HOSTPOOL_NAME || echo "Reset failed or nothing to reset."
+
+      - name: Generate and Retrieve Registration Token via CLI
+        id: get_registration_token
+        run: |
+          expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ" || date -u -v+30d +"%Y-%m-%dT%H:%M:%SZ")
+          echo "Expiration Time is: $expirationTime"
+
+          # Create the registration info (token)
+          az desktopvirtualization registration-info create \
+            --resource-group $RESOURCE_GROUP \
+            --host-pool-name $HOSTPOOL_NAME \
+            --expiration-time "$expirationTime"
+
+          # Retrieve the token
+          registrationToken=$(az desktopvirtualization hostpool show \
+            --resource-group $RESOURCE_GROUP \
+            --name $HOSTPOOL_NAME \
+            --query "registrationInfo.token" \
+            --output tsv)
+
+          echo "registrationToken=$registrationToken" >> $GITHUB_ENV
+          echo "::set-output name=registrationToken::$registrationToken"
+
 
       - name: Deploy Session Hosts from custom image
         run: |
