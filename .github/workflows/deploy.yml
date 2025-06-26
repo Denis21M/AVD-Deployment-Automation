@@ -104,6 +104,6 @@ jobs:
                          domainJoinUsername="${{ secrets.DOMAIN_JOIN_USERNAME }}" \
                          domainJoinPassword="${{ secrets.DOMAIN_JOIN_PASSWORD }}" \
                          identityId="${{ secrets.IDENTITY_ID }}" \
-                         registrationToken="${{ env.registrationToken }}" \
+                         registrationToken="${{ secrets.REGISTRATION_TOKEN }}" \
                          sessionHostCount=1
             --debug
