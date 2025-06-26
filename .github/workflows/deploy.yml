@@ -27,7 +27,6 @@ jobs:
           expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ")
 
           hostPoolDeploy=$(az deployment group create \
-            --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/hostpool.bicep \
             --parameters hostPoolName=$HOSTPOOL_NAME \
                          location=$LOCATION \
@@ -48,7 +47,6 @@ jobs:
       - name: Deploy Application Group
         run: |
           az deployment group create \
-            --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/applicationgroup.bicep \
             --parameters appGroupName=$APPGROUP_NAME \
                          location=$LOCATION \

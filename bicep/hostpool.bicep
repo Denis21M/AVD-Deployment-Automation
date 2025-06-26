@@ -36,9 +36,6 @@ resource registrationInfo 'Microsoft.DesktopVirtualization/hostPools/registratio
   properties: {
     expirationTime: expirationTime
   }
-  dependsOn: [
-    hostPool
-  ]
 }
 
 // Output registration token value to use for session host registration
