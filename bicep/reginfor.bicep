@@ -1,15 +1,15 @@
-@description('Host pool resource ID')
+@description('Resource ID of the existing AVD host pool')
 param hostPoolId string
 
-@description('Registration token expiration time in ISO 8601 format (e.g. 2025-07-20T10:00:00Z)')
+@description('Registration token expiration time in ISO 8601 format (e.g. 2025-07-26T12:00:00Z)')
 param expirationTime string
 
-// Get host pool resource from resource ID (import existing)
+// Reference existing host pool
 resource hostPool 'Microsoft.DesktopVirtualization/hostPools@2022-02-10-preview' existing = {
-  id: hostPoolId
+  name: last(split(hostPoolId, '/'))
 }
 
-// Registration Info (token) Resource — child of hostPool
+// Registration Info
 resource registrationInfo 'Microsoft.DesktopVirtualization/hostPools/registrationInfo@2022-02-10-preview' = {
   name: 'registrationInfo'
   parent: hostPool
@@ -18,5 +18,4 @@ resource registrationInfo 'Microsoft.DesktopVirtualization/hostPools/registratio
   }
 }
 
-// Output registration token value to use for session host registration
 output registrationToken string = registrationInfo.properties.token
