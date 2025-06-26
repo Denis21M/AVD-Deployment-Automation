@@ -67,6 +67,38 @@ jobs:
             --parameters location=$LOCATION \
                         appGroupResourceId=$appGroupResourceId \
                         workspaceName="avd-workspace"
+
+      - name: Trigger Image Build
+        run: |
+          az resource invoke-action \
+            --resource-group $RESOURCE_GROUP \
+            --resource-type Microsoft.VirtualMachineImages/imageTemplates \
+            --name "win10" \
+            --action Run
+
+      - name: Wait for Image Build Completion
+        run: |
+          echo "Waiting for image build to complete..."
+          for i in {1..30}; do
+            status=$(az resource show \
+              --resource-group $RESOURCE_GROUP \
+              --resource-type Microsoft.VirtualMachineImages/imageTemplates \
+              --name "win10" \
+              --query "properties.lastRunStatus.runState" -o tsv)
+
+            echo "Current build status: $status"
+
+            if [[ "$status" == "Completed" ]]; then
+              echo "Image build completed successfully."
+              break
+            elif [[ "$status" == "Failed" ]]; then
+              echo "Image build failed."
+              exit 1
+            fi
+
+            echo "Still building... waiting 30s"
+            sleep 30
+          done
       
       - name: Ensure AVD Extension Installed
         run: |
