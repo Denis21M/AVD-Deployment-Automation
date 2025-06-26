@@ -83,7 +83,7 @@ jobs:
             status=$(az resource show \
               --resource-group $RESOURCE_GROUP \
               --resource-type Microsoft.VirtualMachineImages/imageTemplates \
-              --name "win10" \
+              --name "wind10" \
               --query "properties.lastRunStatus.runState" -o tsv)
 
             echo "Current build status: $status"
