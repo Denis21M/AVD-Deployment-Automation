@@ -48,6 +48,22 @@ jobs:
           hostPoolId=$(jq -r '.properties.outputs.hostPoolId.value' hostpool_deploy.json)
           echo "hostPoolId=$hostPoolId" >> $GITHUB_ENV
           echo "::set-output name=hostPoolId::$hostPoolId"
+      
+      - name: Delete existing Registration Info if exists
+        run: |
+          registrationInfoExists=$(az resource show \
+            --resource-group $RESOURCE_GROUP \
+            --resource-type "Microsoft.DesktopVirtualization/hostPools/registrationInfo" \
+            --name "$HOSTPOOL_NAME/registrationInfo" \
+            --query "name" -o tsv || echo "")
+          
+          if [ -n "$registrationInfoExists" ]; then
+            echo "Deleting existing registrationInfo..."
+            az resource delete \
+              --ids "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DesktopVirtualization/hostPools/$HOSTPOOL_NAME/registrationInfo"
+          else
+            echo "No existing registrationInfo found."
+          fi
 
       - name: Deploy Registration Info (token) and get token
         id: deploy_registration
