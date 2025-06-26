@@ -73,7 +73,7 @@ jobs:
           az resource invoke-action \
             --resource-group $RESOURCE_GROUP \
             --resource-type Microsoft.VirtualMachineImages/imageTemplates \
-            --name "win10" \
+            --name "wind10" \
             --action Run
 
       - name: Wait for Image Build Completion
