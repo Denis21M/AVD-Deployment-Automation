@@ -55,7 +55,6 @@ jobs:
       - name: Deploy AVD Workspace
         run: |
           az deployment group create \
-            --resource-group avd-rg \
             --template-file ./bicep/workspace.bicep \
             --parameters location="eastus"
 
