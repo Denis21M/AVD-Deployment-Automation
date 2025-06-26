@@ -91,19 +91,23 @@ jobs:
 
       - name: Deploy Session Hosts from custom image
         run: |
+          token="'${{ secrets.REGISTRATION_TOKEN }}'"  # Wrap with single quotes
+          echo "Using registrationToken (first 10 chars): ${token:0:10}"
+
           az deployment group create \
             --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/sessionhosts.bicep \
             --parameters sessionHostNamePrefix="session-host" \
-                         location=$LOCATION \
-                         imageId="${{ secrets.IMAGE_ID }}" \
-                         subnetId="${{ secrets.SUBNET_ID }}" \
-                         adminUsername="${{ secrets.VM_ADMIN_USERNAME }}" \
-                         adminPassword="${{ secrets.VM_ADMIN_PASSWORD }}" \
-                         domainToJoin="chinazom.com" \
-                         domainJoinUsername="${{ secrets.DOMAIN_JOIN_USERNAME }}" \
-                         domainJoinPassword="${{ secrets.DOMAIN_JOIN_PASSWORD }}" \
-                         identityId="${{ secrets.IDENTITY_ID }}" \
-                         registrationToken="${{ secrets.REGISTRATION_TOKEN }}" \
-                         sessionHostCount=1
+                        location=$LOCATION \
+                        imageId="${{ secrets.IMAGE_ID }}" \
+                        subnetId="${{ secrets.SUBNET_ID }}" \
+                        adminUsername="${{ secrets.VM_ADMIN_USERNAME }}" \
+                        adminPassword="${{ secrets.VM_ADMIN_PASSWORD }}" \
+                        domainToJoin="chinazom.com" \
+                        domainJoinUsername="${{ secrets.DOMAIN_JOIN_USERNAME }}" \
+                        domainJoinPassword="${{ secrets.DOMAIN_JOIN_PASSWORD }}" \
+                        identityId="${{ secrets.IDENTITY_ID }}" \
+                        registrationToken=$token \
+                        sessionHostCount=1 \
             --debug
+
