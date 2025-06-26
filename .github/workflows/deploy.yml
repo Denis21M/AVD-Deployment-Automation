@@ -37,8 +37,7 @@ jobs:
             --template-file ./bicep/hostpool.bicep \
             --parameters hostPoolName=avd-hostpool \
                         location=eastus \
-                        expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ")
-
+                        expirationTime=$(date -u -d "+30 days" +"%Y-%m-%dT%H:%M:%SZ") \
             --query properties.outputs \
             --output json)
 
