@@ -59,11 +59,15 @@ jobs:
 
       - name: Deploy AVD Workspace
         run: |
+          appGroupResourceId="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DesktopVirtualization/applicationGroups/$APPGROUP_NAME"
+          
           az deployment group create \
             --resource-group $RESOURCE_GROUP \
             --template-file ./bicep/workspace.bicep \
-            --parameters location=$LOCATION
-
+            --parameters location=$LOCATION \
+                        appGroupResourceId=$appGroupResourceId \
+                        workspaceName="avd-workspace"
+                        
       - name: Reset existing Registration Info (if any)
         run: |
           echo "Resetting registration info for host pool (if exists)..."
