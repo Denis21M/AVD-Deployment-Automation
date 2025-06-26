@@ -22,6 +22,13 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Delete existing AVD Host Pool if exists
+        run: |
+          az desktopvirtualization hostpool delete \
+            --resource-group $RESOURCE_GROUP \
+            --name $HOSTPOOL_NAME \
+            --yes || echo "Host pool not found, skipping deletion"
+
       - name: Deploy Host Pool and Get Registration Token
         run: |
           hostPoolDeploy=$(az deployment group create \
