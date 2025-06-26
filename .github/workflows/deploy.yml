@@ -104,5 +104,4 @@ jobs:
                          domainJoinPassword="${{ secrets.DOMAIN_JOIN_PASSWORD }}" \
                          identityId="${{ secrets.IDENTITY_ID }}" \
                          registrationToken="${{ env.registrationToken }}" \
-                         hostPoolId="${{ env.hostPoolId }}" \
                          sessionHostCount=1
